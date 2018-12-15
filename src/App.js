@@ -15,14 +15,25 @@ function getIndexNext(grid = [], index = 0, adder = 0) {
   return index;
 }
 
+function isBlack(val) {
+  return val === ".";
+}
+
 function App(props) {
   const { size, grid, gridnums } = props;
   const cells = size.cols * size.rows;
-  const lettersInitial = Array.from({ length: cells }, () => "");
-  const [letters, setLetters] = useState(lettersInitial);
+
+  // Create updaters for all pieces of state
   const [indexCurrent, setIndexCurrent] = useState(0);
   const [isAcross, setIsAcross] = useState(true);
-  const refs = Array.from({ length: cells }, () => useRef(null));
+  const [letters, setLetters] = useState(
+    Array.from({ length: cells }, () => "")
+  );
+
+  // Set references to all inputs, skip black cells.
+  const refs = Array.from({ length: cells }, i =>
+    !isBlack(grid[i]) ? useRef(null) : null
+  );
 
   function goUp() {
     return setIndexCurrent(getIndexNext(grid, indexCurrent, -size.rows));
@@ -74,54 +85,36 @@ function App(props) {
   useEffect(
     () => {
       window.addEventListener("keydown", handleKeyDown);
-      refs[indexCurrent].current && refs[indexCurrent].current.focus();
+      if (refs[indexCurrent] && refs[indexCurrent].current) {
+        // Go to next input if its available.
+        refs[indexCurrent].current.focus();
+      }
       return () => window.removeEventListener("keydown", handleKeyDown);
     },
     [indexCurrent]
   );
 
   return (
-    <div
-      className="App"
-      style={{
-        display: "flex",
-        flexDirection: "column",
-        justifyContent: "center",
-        alignItems: "center",
-        height: "100vh"
-      }}
-    >
-      <div
-        className="App"
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          border: "1px solid black",
-          margin: "auto"
-        }}
-      >
+    <main className="main">
+      <section className="crossword">
         {Array.from({ length: size.rows }, (_, i) => {
           return (
-            <div style={{ display: "flex" }} key={i}>
+            <div className="row" key={i}>
               {Array.from({ length: size.cols }, (_, j) => {
                 const index = i * size.rows + j;
                 const letter = grid[index];
                 const number = gridnums[index];
-                const isBlack = letter === ".";
+
                 return (
                   <div
                     key={index}
+                    className="cell"
                     style={{
-                      width: "25px",
-                      height: "25px",
-                      backgroundColor: isBlack ? "black" : "white",
-                      border: "1px solid black",
-                      position: "relative",
-                      display: "flex",
-                      justifyContent: "center",
-                      alignItems: "center"
+                      "--bgcolor": isBlack(letter)
+                        ? "black"
+                        : index === indexCurrent
+                        ? "#efefef"
+                        : "white"
                     }}
                   >
                     {number > 0 && (
@@ -136,9 +129,10 @@ function App(props) {
                         {number}
                       </span>
                     )}
-                    {!isBlack && (
+                    {!isBlack(letter) && (
                       <input
-                        value={letters[index] || ""}
+                        className="input"
+                        value={letters[index]}
                         ref={refs[index]}
                         onFocus={() => setIndexCurrent(index)}
                         onChange={event => {
@@ -155,16 +149,6 @@ function App(props) {
                           }
                           return goDown();
                         }}
-                        style={{
-                          position: "absolute",
-                          appearance: "none",
-                          border: 0,
-                          outline: 0,
-                          width: "100%",
-                          height: "100%",
-                          background: "transparent",
-                          textAlign: "center"
-                        }}
                       />
                     )}
                   </div>
@@ -173,8 +157,8 @@ function App(props) {
             </div>
           );
         })}
-      </div>
-    </div>
+      </section>
+    </main>
   );
 }
 
