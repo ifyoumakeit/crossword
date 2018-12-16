@@ -1,18 +1,36 @@
 import React, { useState, useEffect, useRef } from "react";
 import "./App.css";
 
-function getIndexNext(grid = [], index = 0, adder = 0) {
+function getIndexNext(index = 0, adder = 0, cellFn = () => {}) {
   const indexNext = index + adder;
+  const cellNext = cellFn(indexNext);
 
-  if (grid[indexNext]) {
-    console.log(indexNext);
-    if (grid[indexNext] === ".") {
-      return getIndexNext(grid, indexNext, adder);
+  if (cellNext) {
+    if (cellNext === ".") {
+      return getIndexNext(indexNext, adder, cellFn);
     }
     return indexNext;
   }
 
   return index;
+}
+
+const DIRECTIONS = {
+  up: "up",
+  right: "right",
+  down: "down",
+  left: "left"
+};
+
+function getAdder(direction = DIRECTIONS.up, rows) {
+  return (
+    {
+      up: -rows,
+      right: 1,
+      down: rows,
+      left: -1
+    }[direction] || 0
+  );
 }
 
 function isBlack(val) {
@@ -35,46 +53,39 @@ function App(props) {
     !isBlack(grid[i]) ? useRef(null) : null
   );
 
-  function goUp() {
-    return setIndexCurrent(getIndexNext(grid, indexCurrent, -size.rows));
-  }
-
-  function goRight() {
-    return setIndexCurrent(getIndexNext(grid, indexCurrent, 1));
-  }
-
-  function goDown() {
-    return setIndexCurrent(getIndexNext(grid, indexCurrent, size.rows));
-  }
-
-  function goLeft() {
-    return setIndexCurrent(getIndexNext(grid, indexCurrent, -1));
+  // Go in a certain direction.
+  function go(direction) {
+    setIsAcross([DIRECTIONS.left, DIRECTIONS.right].includes(direction));
+    setIndexCurrent(
+      getIndexNext(
+        indexCurrent,
+        getAdder(direction, size.rows),
+        index => grid[index]
+      )
+    );
+    return;
   }
 
   function handleKeyDown(event) {
     switch (event.key) {
       case "ArrowUp": {
-        setIsAcross(false);
-        return goUp();
+        return go(DIRECTIONS.up);
       }
       case "ArrowRight": {
-        setIsAcross(true);
-        return goRight();
+        return go(DIRECTIONS.right);
       }
       case "ArrowDown": {
-        setIsAcross(false);
-        return goDown();
+        return go(DIRECTIONS.down);
       }
       case "ArrowLeft": {
-        setIsAcross(true);
-        return goLeft();
+        return go(DIRECTIONS.left);
       }
       case "Tab": {
         event.preventDefault();
         if (isAcross) {
-          return event.shiftKey ? goLeft() : goRight();
+          return event.shiftKey ? go(DIRECTIONS.left) : go(DIRECTIONS.right);
         }
-        return event.shiftKey ? goUp() : goDown();
+        return event.shiftKey ? go(DIRECTIONS.up) : go(DIRECTIONS.down);
       }
       default: {
         return;
@@ -96,64 +107,56 @@ function App(props) {
 
   return (
     <main className="main">
-      <section className="crossword">
-        {Array.from({ length: size.rows }, (_, i) => {
+      <section className="crossword" style={{ "--rows": size.rows }}>
+        {grid.map((letter, index) => {
+          const number = gridnums[index];
+
           return (
-            <div className="row" key={i}>
-              {Array.from({ length: size.cols }, (_, j) => {
-                const index = i * size.rows + j;
-                const letter = grid[index];
-                const number = gridnums[index];
+            <div
+              key={index}
+              className="cell"
+              style={{
+                "--bgcolor": isBlack(letter)
+                  ? "black"
+                  : index === indexCurrent
+                  ? "#efefef"
+                  : "white"
+              }}
+            >
+              {number > 0 && (
+                <span
+                  style={{
+                    position: "absolute",
+                    top: "0px",
+                    left: "2px",
+                    fontSize: "7px"
+                  }}
+                >
+                  {number}
+                </span>
+              )}
+              {!isBlack(letter) && (
+                <input
+                  className="input"
+                  value={letters[index]}
+                  ref={refs[index]}
+                  onFocus={() => setIndexCurrent(index)}
+                  onChange={event => {
+                    const { value } = event.currentTarget;
+                    const valueSingle = value[value.length - 1];
+                    setLetters([
+                      ...letters.slice(0, index),
+                      valueSingle,
+                      ...letters.slice(index + 1)
+                    ]);
 
-                return (
-                  <div
-                    key={index}
-                    className="cell"
-                    style={{
-                      "--bgcolor": isBlack(letter)
-                        ? "black"
-                        : index === indexCurrent
-                        ? "#efefef"
-                        : "white"
-                    }}
-                  >
-                    {number > 0 && (
-                      <span
-                        style={{
-                          position: "absolute",
-                          top: "0px",
-                          left: "2px",
-                          fontSize: "7px"
-                        }}
-                      >
-                        {number}
-                      </span>
-                    )}
-                    {!isBlack(letter) && (
-                      <input
-                        className="input"
-                        value={letters[index]}
-                        ref={refs[index]}
-                        onFocus={() => setIndexCurrent(index)}
-                        onChange={event => {
-                          const { value } = event.currentTarget;
-                          const valueSingle = value[value.length - 1];
-                          setLetters([
-                            ...letters.slice(0, index),
-                            valueSingle,
-                            ...letters.slice(index + 1)
-                          ]);
-
-                          if (isAcross) {
-                            return goRight();
-                          }
-                          return goDown();
-                        }}
-                      />
-                    )}
-                  </div>
-                );
-              })}
+                    if (isAcross) {
+                      return go(DIRECTIONS.right);
+                    }
+                    return go(DIRECTIONS.down);
+                  }}
+                />
+              )}
             </div>
           );
         })}

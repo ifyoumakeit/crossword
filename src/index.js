@@ -5,7 +5,7 @@ import App from "./App";
 import * as serviceWorker from "./serviceWorker";
 
 fetch(
-  "https://raw.githubusercontent.com/doshea/nyt_crosswords/master/2012/09/01.json"
+  "https://raw.githubusercontent.com/doshea/nyt_crosswords/master/2012/09/12.json"
 )
   .then(resp => resp.json())
   .then(crossword =>

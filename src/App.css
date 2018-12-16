@@ -7,7 +7,8 @@
 }
 
 .crossword {
-  display: flex;
+  display: grid;
+  grid-template-columns: repeat(var(--rows), 1fr);
   flex-direction: column;
   justify-content: center;
   align-items: center;
@@ -15,13 +16,9 @@
   margin: auto;
 }
 
-.row {
-  display: flex;
-}
-
 .cell {
-  width: 25px;
-  height: 25px;
+  width: 50px;
+  height: 50px;
   background-color: var(--bgcolor);
   border: 1px solid black;
   position: relative;
