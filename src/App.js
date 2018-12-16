@@ -110,7 +110,6 @@ function App(props) {
       <section className="crossword" style={{ "--rows": size.rows }}>
         {grid.map((letter, index) => {
           const number = gridnums[index];
-
           return (
             <div
               key={index}
@@ -123,18 +122,7 @@ function App(props) {
                   : "white"
               }}
             >
-              {number > 0 && (
-                <span
-                  style={{
-                    position: "absolute",
-                    top: "0px",
-                    left: "2px",
-                    fontSize: "7px"
-                  }}
-                >
-                  {number}
-                </span>
-              )}
+              {number > 0 && <span className="num">{number}</span>}
               {!isBlack(letter) && (
                 <input
                   className="input"
