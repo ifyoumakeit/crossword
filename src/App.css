@@ -3,11 +3,6 @@
 }
 
 .main {
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  height: 100vh;
 }
 
 .crossword {
@@ -48,5 +43,9 @@
   background: transparent;
   text-align: center;
   font-size: 3vw;
-  line-height: 1;  
+  line-height: 1;
+}
+
+.clue {
+  background-color: var(--bgcolor);
 }
