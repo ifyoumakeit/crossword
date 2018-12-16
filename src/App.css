@@ -47,4 +47,6 @@
   height: 100%;
   background: transparent;
   text-align: center;
+  font-size: 3vw;
+  line-height: 1;  
 }

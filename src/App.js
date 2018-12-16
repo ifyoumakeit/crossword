@@ -37,6 +37,27 @@ function isBlack(val) {
   return val === ".";
 }
 
+function getCluesLookup(grid, gridnums, rows) {
+  return grid.map((letter, index) => {
+    if (letter === ".") {
+      return 0;
+    }
+
+    const col = Math.floor(index / rows);
+    const offset = col * rows;
+    const slice = grid.slice(offset, index);
+
+    // Look through row for first sign of .
+    const numberAssocIndex = slice.reverse().findIndex(val => val === ".");
+
+    const numberAssocIndexNormalized =
+      numberAssocIndex < 0 ? offset : offset + slice.length - numberAssocIndex;
+
+    const numberAssoc = gridnums[numberAssocIndexNormalized];
+    return numberAssoc;
+  });
+}
+
 function App(props) {
   const { size, grid, gridnums } = props;
   const cells = size.cols * size.rows;
@@ -47,10 +68,29 @@ function App(props) {
   const [letters, setLetters] = useState(
     Array.from({ length: cells }, () => "")
   );
+  const [cluesLookup, setCluesLookup] = useState(
+    getCluesLookup(grid, gridnums, size.rows)
+  );
 
   // Set references to all inputs, skip black cells.
   const refs = Array.from({ length: cells }, i =>
     !isBlack(grid[i]) ? useRef(null) : null
+  );
+
+  useEffect(
+    () => {
+      window.addEventListener("keydown", handleKeyDown);
+      if (refs[indexCurrent] && refs[indexCurrent].current) {
+        // Go to next input if its available.
+        refs[indexCurrent].current.focus();
+      }
+
+      // Update clues if they change
+      setCluesLookup(getCluesLookup(grid, gridnums, size.rows));
+
+      return () => window.removeEventListener("keydown", handleKeyDown);
+    },
+    [indexCurrent, grid, gridnums]
   );
 
   // Go in a certain direction.
@@ -93,23 +133,13 @@ function App(props) {
     }
   }
 
-  useEffect(
-    () => {
-      window.addEventListener("keydown", handleKeyDown);
-      if (refs[indexCurrent] && refs[indexCurrent].current) {
-        // Go to next input if its available.
-        refs[indexCurrent].current.focus();
-      }
-      return () => window.removeEventListener("keydown", handleKeyDown);
-    },
-    [indexCurrent]
-  );
-
   return (
     <main className="main">
       <section className="crossword" style={{ "--rows": size.rows }}>
         {grid.map((letter, index) => {
           const number = gridnums[index];
+          const clue = cluesLookup[index];
+
           return (
             <div
               key={index}
@@ -119,6 +149,8 @@ function App(props) {
                   ? "black"
                   : index === indexCurrent
                   ? "#efefef"
+                  : clue === cluesLookup[indexCurrent]
+                  ? "#eaeaea"
                   : "white"
               }}
             >
@@ -126,15 +158,23 @@ function App(props) {
               {!isBlack(letter) && (
                 <input
                   className="input"
+                  name={`cell-${index}`}
                   value={letters[index]}
                   ref={refs[index]}
-                  onFocus={() => setIndexCurrent(index)}
+                  onFocus={() => {
+                    setIndexCurrent(index);
+                  }}
                   onChange={event => {
                     const { value } = event.currentTarget;
                     const valueSingle = value[value.length - 1];
+
+                    if (!/[A-z]/.test(valueSingle)) {
+                      return; // Skip non-letters.
+                    }
+
                     setLetters([
                       ...letters.slice(0, index),
-                      valueSingle,
+                      valueSingle.toUpperCase(),
                       ...letters.slice(index + 1)
                     ]);
 
