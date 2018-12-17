@@ -9,6 +9,10 @@ function isBlack(val) {
   return val === BLANK_CHAR;
 }
 
+function isLetter(val) {
+  return /^[a-zA-Z]$/.test(val);
+}
+
 function getDirectionKey(isAcross) {
   return isAcross ? "across" : "down";
 }
@@ -45,45 +49,6 @@ function App({
     [indexCurrent]
   );
 
-  useEffect(
-    () => {
-      function handleKeyDown(event) {
-        setIndexCurrent(indexCurrent => {
-          if (isAcross) {
-            const left = () => getNextIndex(indexCurrent, grid, -1);
-            const right = () => getNextIndex(indexCurrent, grid, +1);
-
-            if (event.key === "ArrowLeft") return left();
-            if (event.key === "ArrowRight") return right();
-            if (event.key === "Tab") return event.shiftKey ? left() : right();
-
-            return indexCurrent;
-          }
-
-          const up = () => getNextIndex(indexCurrent, grid, -size.rows);
-          const down = () => getNextIndex(indexCurrent, grid, +size.rows);
-
-          if (event.key === "ArrowUp") return up();
-          if (event.key === "ArrowDown") return down();
-          if (event.key === "Tab") return event.shiftKey ? up() : down();
-
-          return indexCurrent;
-        });
-
-        setIsAcross(isAcross => {
-          if (["ArrowLeft", "ArrowRight"].includes(event.key)) return true;
-          if (["ArrowDown", "ArrowUp"].includes(event.key)) return false;
-          return isAcross;
-        });
-      }
-
-      window.addEventListener("keydown", handleKeyDown);
-      setCluesLookup(getCluesLookup(grid, size.cols));
-      return () => window.removeEventListener("keydown", handleKeyDown);
-    },
-    [grid, gridnums, isAcross]
-  );
-
   return (
     <main className="main">
       <section className="crossword" style={{ "--rows": size.rows }}>
@@ -113,35 +78,60 @@ function App({
                   name={`cell-${index}`}
                   value={letters[index]}
                   ref={refs[index]}
-                  onFocus={() => {
+                  onFocus={event => {
                     setIndexCurrent(index);
                   }}
                   onChange={() => {}}
                   onKeyDown={event => {
-                    const key = event.key;
-                    const value = key === "Backspace" ? "" : key;
+                    event.persist();
+                    setIndexCurrent(indexCurrent => {
+                      if (isAcross) {
+                        const left = () => getNextIndex(indexCurrent, grid, -1);
+                        const right = () =>
+                          getNextIndex(indexCurrent, grid, +1);
 
-                    if (value && !/^[a-zA-Z]$/.test(value)) {
-                      return; // Skip non-letters or multi-letter keys.
+                        if (event.key === "Backspace") return left();
+                        if (event.key === "ArrowLeft") return left();
+                        if (event.key === "ArrowRight") return right();
+                        if (event.key === "Tab")
+                          return event.shiftKey ? left() : right();
+                        if (/^[a-zA-Z]$/.test(event.key)) return right();
+                      }
+
+                      const up = () =>
+                        getNextIndex(indexCurrent, grid, -size.rows);
+                      const down = () =>
+                        getNextIndex(indexCurrent, grid, +size.rows);
+
+                      if (event.key === "Backspace") return up();
+                      if (event.key === "ArrowUp") return up();
+                      if (event.key === "ArrowDown") return down();
+                      if (event.key === "Tab")
+                        return event.shiftKey ? up() : down();
+                      if (/^[a-zA-Z]$/.test(event.key)) return down();
+
+                      console.log(event.key);
+                    });
+
+                    setIsAcross(isAcross => {
+                      if (["ArrowLeft", "ArrowRight"].includes(event.key))
+                        return true;
+                      if (["ArrowDown", "ArrowUp"].includes(event.key))
+                        return false;
+                      if (/^[a-zA-Z]$/.test(event.key)) return isAcross;
+                      return isAcross;
+                    });
+
+                    const value = event.key;
+                    console.log(value, isLetter(value))
+                    if (isLetter(value)) {
+                      
+                      setLetters(letters => [
+                        ...letters.slice(0, index),
+                        value.toUpperCase(),
+                        ...letters.slice(index + 1)
+                      ]);
                     }
-
-                    setLetters([
-                      ...letters.slice(0, index),
-                      value.toUpperCase(),
-                      ...letters.slice(index + 1)
-                    ]);
-
-                    const go = {
-                      up: () => getNextIndex(indexCurrent, grid, -size.rows),
-                      right: () => getNextIndex(indexCurrent, grid, +1),
-                      down: () => getNextIndex(indexCurrent, grid, +size.rows),
-                      left: () => getNextIndex(indexCurrent, grid, -1)
-                    };
-
-                    if (isAcross) {
-                      return setIndexCurrent(value ? go.right() : go.left());
-                    }
-                    return setIndexCurrent(value ? go.down() : go.up());
                   }}
                 />
               )}
