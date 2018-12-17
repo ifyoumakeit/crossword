@@ -49,50 +49,39 @@ function App({
     () => {
       function handleKeyDown(event) {
         setIndexCurrent(indexCurrent => {
-          const go = {
-            up: () => getNextIndex(indexCurrent, grid, -size.rows),
-            right: () => getNextIndex(indexCurrent, grid, +1),
-            down: () => getNextIndex(indexCurrent, grid, +size.rows),
-            left: () => getNextIndex(indexCurrent, grid, -1)
-          };
-          return (
-            {
-              ArrowUp: go.up(),
-              ArrowRight: go.right(),
-              ArrowDown: go.down(),
-              ArrowLeft: go.left(),
-              Tab: isAcross
-                ? event.shiftKey
-                  ? go.left()
-                  : go.right()
-                : event.shiftKey
-                ? go.up()
-                : go.down()
-            }[event.key] || indexCurrent
-          );
+          if (isAcross) {
+            const left = () => getNextIndex(indexCurrent, grid, -1);
+            const right = () => getNextIndex(indexCurrent, grid, +1);
+
+            if (event.key === "ArrowLeft") return left();
+            if (event.key === "ArrowRight") return right();
+            if (event.key === "Tab") return event.shiftKey ? left() : right();
+
+            return indexCurrent;
+          }
+
+          const up = () => getNextIndex(indexCurrent, grid, -size.rows);
+          const down = () => getNextIndex(indexCurrent, grid, +size.rows);
+
+          if (event.key === "ArrowUp") return up();
+          if (event.key === "ArrowDown") return down();
+          if (event.key === "Tab") return event.shiftKey ? up() : down();
+
+          return indexCurrent;
         });
-        setIsAcross(
-          {
-            ArrowUp: false,
-            ArrowRight: true,
-            ArrowDown: false,
-            ArrowLeft: false,
-            Tab: isAcross
-              ? event.shiftKey
-                ? false
-                : true
-              : event.shiftKey
-              ? false
-              : true
-          }[event.key]
-        );
+
+        setIsAcross(isAcross => {
+          if (["ArrowLeft", "ArrowRight"].includes(event.key)) return true;
+          if (["ArrowDown", "ArrowUp"].includes(event.key)) return false;
+          return isAcross;
+        });
       }
 
       window.addEventListener("keydown", handleKeyDown);
       setCluesLookup(getCluesLookup(grid, size.cols));
       return () => window.removeEventListener("keydown", handleKeyDown);
     },
-    [grid, gridnums]
+    [grid, gridnums, isAcross]
   );
 
   return (
