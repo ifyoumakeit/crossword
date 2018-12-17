@@ -139,9 +139,9 @@ function App({
                     };
 
                     if (isAcross) {
-                      return value ? go.right() : go.left();
+                      return setIndexCurrent(value ? go.right() : go.left());
                     }
-                    return value ? go.down() : go.up();
+                    return setIndexCurrent(value ? go.down() : go.up());
                   }}
                 />
               )}
