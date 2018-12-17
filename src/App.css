@@ -1,25 +1,25 @@
 :root {
-  --borderWidth: 1px;
+  --pageGutter: 36px;
 }
 
 .main {
+  max-width: 100%;
 }
 
 .crossword {
   display: grid;
+  width: calc(100vw - var(--pageGutter));
+  height: calc(100vw - var(--pageGutter));
   grid-template:
-    repeat(var(--rows), calc((100vw - (2 * var(--borderWidth))) / var(--rows)))
-    / repeat(
-      var(--rows),
-      calc((100vw - (2 * var(--borderWidth))) / var(--rows))
-    );
-  border: 1px solid black;
+    repeat(var(--rows), 1fr)
+    / repeat(var(--rows), 1fr);
+  border: 2px solid black;
   margin: auto;
 }
 
 .cell {
   background-color: var(--bgcolor);
-  border: var(--borderWidth) solid black;
+  border: 1px solid black;
   position: relative;
   display: flex;
   justify-content: center;
