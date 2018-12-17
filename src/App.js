@@ -30,9 +30,7 @@ function App({
   const [indexCurrent, setIndexCurrent] = useState(0);
   const [isAcross, setIsAcross] = useState(true);
   const [letters, setLetters] = useState(grid.map(() => ""));
-  const [cluesLookup, setCluesLookup] = useState(() =>
-    getCluesLookup(grid, size.cols)
-  );
+  const [cluesLookup] = useState(() => getCluesLookup(grid, size.cols));
 
   // Set references to all inputs, skip black cells.
   const refs = grid.map((letter, i) =>
@@ -86,7 +84,8 @@ function App({
                     event.persist();
                     setIndexCurrent(indexCurrent => {
                       if (isAcross) {
-                        const left = () => getNextIndex(indexCurrent, grid, -1);
+                        const left = () =>
+                          getNextIndex(indexCurrent, grid, -1);
                         const right = () =>
                           getNextIndex(indexCurrent, grid, +1);
 
@@ -123,9 +122,8 @@ function App({
                     });
 
                     const value = event.key;
-                    console.log(value, isLetter(value))
+                    console.log(value, isLetter(value));
                     if (isLetter(value)) {
-                      
                       setLetters(letters => [
                         ...letters.slice(0, index),
                         value.toUpperCase(),
@@ -139,31 +137,33 @@ function App({
           );
         })}
       </section>
-      <h1>Clues</h1>
+      <aside className="aside">
+        <h1 className="title">Clues</h1>
 
-      {["across", "down"].map(key => (
-        <section key={key}>
-          <h1>{key}</h1>
-          <ul>
-            {clues[key].map((clue, index) => (
-              <li
-                key={clue}
-                className="clue"
-                style={{
-                  "--bgcolor":
-                    getDirectionKey(isAcross) === key &&
-                    cluesLookup[getDirectionKey(isAcross)][indexCurrent] ===
-                      index
-                      ? "#efefef"
-                      : "#ffffff"
-                }}
-              >
-                {clue}
-              </li>
-            ))}
-          </ul>
-        </section>
-      ))}
+        {["across", "down"].map(key => (
+          <section key={key}>
+            <h1 className="title">{key}</h1>
+            <ul className="clues">
+              {clues[key].map((clue, index) => (
+                <li
+                  key={clue}
+                  className="clue"
+                  style={{
+                    "--bgcolor":
+                      getDirectionKey(isAcross) === key &&
+                      cluesLookup[getDirectionKey(isAcross)][indexCurrent] ===
+                        index
+                        ? "#efefef"
+                        : "#ffffff"
+                  }}
+                >
+                  {clue}
+                </li>
+              ))}
+            </ul>
+          </section>
+        ))}
+      </aside>
     </main>
   );
 }

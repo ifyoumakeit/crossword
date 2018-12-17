@@ -1,20 +1,24 @@
 :root {
-  --pageGutter: 36px;
+  --pageGutter: 18px;
+  --maxWidth: 500px;
 }
 
 .main {
   max-width: 100%;
+  padding: var(--pageGutter);
+  margin: auto;
 }
 
 .crossword {
   display: grid;
-  width: calc(100vw - var(--pageGutter));
-  height: calc(100vw - var(--pageGutter));
+  width: calc(100vw - var(--pageGutter) * 2);
+  height: calc(100vw - var(--pageGutter) * 2);
+  max-width: var(--maxWidth);
+  max-height: var(--maxWidth);
   grid-template:
     repeat(var(--rows), 1fr)
     / repeat(var(--rows), 1fr);
   border: 2px solid black;
-  margin: auto;
 }
 
 .cell {
@@ -46,6 +50,40 @@
   line-height: 1;
 }
 
+.clues {
+  column-count: 2;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
 .clue {
   background-color: var(--bgcolor);
+  font-size: 3vw;
+  margin-bottom: 6px;
+}
+
+.title {
+  margin: 0;
+}
+
+@media (min-width: 900px) {
+  .num,
+  .clue {
+    font-size: 11px;
+  }
+
+  .main {
+    display: flex;
+    justify-content: flex-start;
+    align-items: flex-start;
+  }
+
+  .aside {
+    padding: 12px;
+  }
+
+  .clues {
+    column-count: 3;
+  }
 }
