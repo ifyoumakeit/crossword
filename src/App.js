@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef } from "react";
+import React, { useState, useEffect, useRef, useMemo } from "react";
 import getCluesLookup from "./utils/get_clues_lookup";
 import getNextIndex from "./utils/get_next_index";
 import { BLANK_CHAR } from "./constants";
@@ -30,12 +30,10 @@ function App({
   const [indexCurrent, setIndexCurrent] = useState(0);
   const [isAcross, setIsAcross] = useState(true);
   const [letters, setLetters] = useState(grid.map(() => ""));
-  const [cluesLookup] = useState(() => getCluesLookup(grid, size.cols));
+  const cluesLookup = useMemo(() => getCluesLookup(grid, size.cols), [grid]);
 
   // Set references to all inputs, skip black cells.
-  const refs = grid.map((letter, i) =>
-    !isBlack(letter) ? useRef(null) : null
-  );
+  const refs = grid.map(letter => (!isBlack(letter) ? useRef(null) : null));
 
   useEffect(
     () => {
@@ -84,8 +82,7 @@ function App({
                     event.persist();
                     setIndexCurrent(indexCurrent => {
                       if (isAcross) {
-                        const left = () =>
-                          getNextIndex(indexCurrent, grid, -1);
+                        const left = () => getNextIndex(indexCurrent, grid, -1);
                         const right = () =>
                           getNextIndex(indexCurrent, grid, +1);
 
@@ -142,7 +139,7 @@ function App({
 
         {["across", "down"].map(key => (
           <section key={key}>
-            <h1 className="title">{key}</h1>
+            <h1 className="title">{key.toUpperCase()}</h1>
             <ul className="clues">
               {clues[key].map((clue, index) => (
                 <li

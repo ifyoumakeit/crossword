@@ -10,7 +10,7 @@
 }
 
 .crossword {
-  display: grid;
+  display: grid;  
   width: calc(100vw - var(--pageGutter) * 2);
   height: calc(100vw - var(--pageGutter) * 2);
   max-width: var(--maxWidth);
@@ -64,7 +64,7 @@
 }
 
 .title {
-  margin: 0;
+  margin: 0 0 12px;
 }
 
 @media (min-width: 900px) {
@@ -79,11 +79,14 @@
     align-items: flex-start;
   }
 
-  .aside {
-    padding: 12px;
-  }
-
   .clues {
     column-count: 3;
+  }
+
+  .crossword {
+    flex-shrink: 0;
+    width: 48vw;
+    height: 48vw;
+    margin-right: 2vw;
   }
 }
