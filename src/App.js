@@ -105,8 +105,6 @@ function App({
                       if (event.key === "Tab")
                         return event.shiftKey ? up() : down();
                       if (/^[a-zA-Z]$/.test(event.key)) return down();
-
-                      console.log(event.key);
                     });
 
                     setIsAcross(isAcross => {
@@ -119,7 +117,6 @@ function App({
                     });
 
                     const value = event.key;
-                    console.log(value, isLetter(value));
                     if (isLetter(value)) {
                       setLetters(letters => [
                         ...letters.slice(0, index),
