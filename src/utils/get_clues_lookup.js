@@ -1,4 +1,4 @@
-import { BLANK_NUMBER } from "../constants";
+import { BLANK_NUMBER, BLANK_CHAR } from "../constants";
 
 export default function getCluesLookup(grid = [], cols = 0) {
   return {
@@ -25,28 +25,20 @@ export default function getCluesLookup(grid = [], cols = 0) {
     }, []),
     down: grid.reduce(
       (acc, letter, index) => {
-        if (letter === ".") {
+        if (letter === BLANK_CHAR) {
           return {
-            count: acc.count,
+            ...acc,
             down: acc.down.concat(BLANK_NUMBER)
           };
         }
 
-        const col = index % cols;
-        const lastNum = acc.down
-          .slice(0)
-          .reverse()
-          .find(function isValid(value, index, arr) {
-            return (
-              value !== BLANK_NUMBER && (arr.length - 1 - index) % cols === col
-            );
-          });
-
-        const count = lastNum > BLANK_NUMBER ? lastNum : acc.count + 1;
+        const lastNum = acc.down[index - cols];
+        const shouldUpdate = lastNum === BLANK_NUMBER || lastNum === undefined;
+        const count = shouldUpdate ? acc.count + 1 : acc.count;
 
         return {
           count,
-          down: acc.down.concat(count)
+          down: acc.down.concat(shouldUpdate ? count : lastNum)
         };
       },
       { down: [], count: -1 }
