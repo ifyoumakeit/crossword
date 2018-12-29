@@ -1,7 +1,7 @@
 import React, { useState, useEffect, useRef, useMemo } from "react";
 import getCluesLookup from "./utils/get_clues_lookup";
 import getNextIndex from "./utils/get_next_index";
-import { BLANK_CHAR } from "./constants";
+import { BLANK_CHAR, EVENTS } from "./constants";
 
 import "./App.css";
 
@@ -74,48 +74,67 @@ function App({
                   name={`cell-${index}`}
                   value={letters[index]}
                   ref={refs[index]}
-                  onFocus={event => {
-                    setIndexCurrent(index);
-                  }}
+                  onFocus={() => setIndexCurrent(index)}
                   onChange={() => {}}
                   onKeyDown={event => {
                     event.persist();
                     setIndexCurrent(indexCurrent => {
-                      console.log(event.key, isAcross, indexCurrent);
                       if (isAcross) {
-                        const left = () => getNextIndex(indexCurrent, grid, -1);
-                        const right = () =>
-                          getNextIndex(indexCurrent, grid, +1);
+                        if (
+                          event.key === EVENTS.Backspace ||
+                          event.key === EVENTS.ArrowLeft ||
+                          (event.key === EVENTS.Tab && event.shiftKey)
+                        ) {
+                          return getNextIndex(indexCurrent, grid, -1);
+                        }
 
-                        if (event.key === "Backspace") return left();
-                        if (event.key === "ArrowLeft") return left();
-                        if (event.key === "ArrowRight") return right();
-                        if (event.key === "Tab")
-                          return event.shiftKey ? left() : right();
-                        if (/^[a-zA-Z]$/.test(event.key)) return right();
+                        if (
+                          event.key === EVENTS.ArrowRight ||
+                          event.key === EVENTS.Tab ||
+                          isLetter(event.key)
+                        ) {
+                          return getNextIndex(indexCurrent, grid, +1);
+                        }
                       }
 
-                      const up = () =>
-                        getNextIndex(indexCurrent, grid, -size.rows);
-                      const down = () =>
-                        getNextIndex(indexCurrent, grid, +size.rows);
-
-                      if (event.key === "Backspace") return up();
-                      if (event.key === "ArrowUp") return up();
-                      if (event.key === "ArrowDown") return down();
-                      if (event.key === "Tab")
-                        return event.shiftKey ? up() : down();
-                      if (/^[a-zA-Z]$/.test(event.key)) return down();
+                      if (!isAcross) {
+                        if (
+                          event.key === EVENTS.Backspace ||
+                          event.key === EVENTS.ArrowUp ||
+                          (event.key === EVENTS.Tab && event.shiftKey)
+                        ) {
+                          {
+                            return getNextIndex(indexCurrent, grid, -size.rows);
+                          }
+                        }
+                        if (
+                          event.key === EVENTS.ArrowDown ||
+                          event.key === EVENTS.Tab ||
+                          isLetter(event.key)
+                        ) {
+                          return getNextIndex(indexCurrent, grid, size.rows);
+                        }
+                      }
 
                       return indexCurrent;
                     });
 
                     setIsAcross(isAcross => {
-                      if (["ArrowLeft", "ArrowRight"].includes(event.key))
+                      if (
+                        event.key === EVENTS.ArrowLeft ||
+                        event.key === EVENTS.ArrowRight
+                      ) {
                         return true;
-                      if (["ArrowDown", "ArrowUp"].includes(event.key))
+                      }
+                      if (
+                        event.key === EVENTS.ArrowDown ||
+                        event.key === EVENTS.ArrowUp
+                      ) {
                         return false;
-                      if (/^[a-zA-Z]$/.test(event.key)) return isAcross;
+                      }
+                      if (isLetter(event.key)) {
+                        return isAcross;
+                      }
                       return isAcross;
                     });
 
