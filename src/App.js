@@ -81,6 +81,7 @@ function App({
                   onKeyDown={event => {
                     event.persist();
                     setIndexCurrent(indexCurrent => {
+                      console.log(event.key, isAcross, indexCurrent);
                       if (isAcross) {
                         const left = () => getNextIndex(indexCurrent, grid, -1);
                         const right = () =>
@@ -105,6 +106,8 @@ function App({
                       if (event.key === "Tab")
                         return event.shiftKey ? up() : down();
                       if (/^[a-zA-Z]$/.test(event.key)) return down();
+
+                      return indexCurrent;
                     });
 
                     setIsAcross(isAcross => {
