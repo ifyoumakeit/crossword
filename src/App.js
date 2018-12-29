@@ -95,18 +95,15 @@ function App({
                         ) {
                           return getNextIndex(indexCurrent, grid, +1);
                         }
-                      }
-
-                      if (!isAcross) {
+                      } else {
                         if (
                           event.key === EVENTS.Backspace ||
                           event.key === EVENTS.ArrowUp ||
                           (event.key === EVENTS.Tab && event.shiftKey)
                         ) {
-                          {
-                            return getNextIndex(indexCurrent, grid, -size.rows);
-                          }
+                          return getNextIndex(indexCurrent, grid, -size.rows);
                         }
+
                         if (
                           event.key === EVENTS.ArrowDown ||
                           event.key === EVENTS.Tab ||
@@ -138,11 +135,10 @@ function App({
                       return isAcross;
                     });
 
-                    const value = event.key;
-                    if (isLetter(value)) {
+                    if (isLetter(event.key)) {
                       setLetters(letters => [
                         ...letters.slice(0, index),
-                        value.toUpperCase(),
+                        event.key.toUpperCase(),
                         ...letters.slice(index + 1)
                       ]);
                     }
