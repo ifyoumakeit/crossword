@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useRef, useMemo } from "react";
+import React, { useEffect, useRef, useMemo, useReducer } from "react";
 import getCluesLookup from "./utils/get_clues_lookup";
 import getNextIndex from "./utils/get_next_index";
 import { BLANK_CHAR, EVENTS } from "./constants";
@@ -13,8 +13,65 @@ function isLetter(val) {
   return /^[a-zA-Z]$/.test(val);
 }
 
-function getDirectionKey(isAcross) {
-  return isAcross ? "across" : "down";
+const ACTIONS = {
+  SET_INDEX: "SET_INDEX",
+  SET_LETTERS: "SET_LETTERS",
+  SET_ACROSS: "SET_ACROSS",
+  GO_NEXT: "GO_NEXT",
+  GO_PREV: "GO_PREV"
+};
+
+function reducer(state, action = {}) {
+  switch (action.type) {
+    case ACTIONS.SET_LETTERS: {
+      const { letter } = action.payload;
+      return {
+        ...state,
+        letters: [
+          ...state.letters.slice(0, state.index),
+          letter.toUpperCase(),
+          ...state.letters.slice(state.index + 1)
+        ]
+      };
+    }
+    case ACTIONS.SET_ACROSS: {
+      const { isAcross } = action.payload;
+      return {
+        ...state,
+        isAcross
+      };
+    }
+    case ACTIONS.SET_INDEX: {
+      const { index } = action.payload;
+      return {
+        ...state,
+        index: index
+      };
+    }
+    case ACTIONS.GO_NEXT: {
+      return {
+        ...state,
+        index: getNextIndex(
+          state.index,
+          state.grid,
+          state.isAcross ? 1 : state.rows
+        )
+      };
+    }
+    case ACTIONS.GO_PREV: {
+      return {
+        ...state,
+        index: getNextIndex(
+          state.index,
+          state.grid,
+          state.isAcross ? -1 : -state.rows
+        )
+      };
+    }
+    default: {
+      return state;
+    }
+  }
 }
 
 function App({
@@ -27,9 +84,15 @@ function App({
   }
 }) {
   // Create updaters for all pieces of state
-  const [indexCurrent, setIndexCurrent] = useState(0);
-  const [isAcross, setIsAcross] = useState(true);
-  const [letters, setLetters] = useState(grid.map(() => ""));
+  const [state, dispatch] = useReducer(reducer, {
+    index: 0,
+    isAcross: true,
+    letters: grid.map(() => ""),
+    grid,
+    rows: size.rows
+  });
+
+  const keyDirection = state.isAcross ? "across" : "down";
   const cluesLookup = useMemo(() => getCluesLookup(grid, size.cols), [grid]);
 
   // Set references to all inputs, skip black cells.
@@ -37,113 +100,93 @@ function App({
 
   useEffect(
     () => {
-      if (refs[indexCurrent] && refs[indexCurrent].current) {
-        // Go to next input if its available.
-        refs[indexCurrent].current.focus();
+      // Focus on next input if index changes.
+      if (refs[state.index] && refs[state.index].current) {
+        refs[state.index].current.focus();
       }
     },
-    [indexCurrent]
+    [state.index]
   );
+
+  useEffect(() => {
+    function handleKeyDown(event) {
+      if (event.target.className !== "input") {
+        return dispatch({ type: ACTIONS.SET_INDEX, payload: { index: -1 } });
+      }
+      
+      event.preventDefault();
+      if (isLetter(event.key) || event.key === EVENTS.Backspace) {
+        dispatch({
+          type: ACTIONS.SET_LETTERS,
+          payload: { letter: event.key === EVENTS.Backspace ? "" : event.key }
+        });
+      }
+
+      if (
+        event.key === EVENTS.ArrowLeft ||
+        event.key === EVENTS.ArrowRight ||
+        event.key === EVENTS.ArrowDown ||
+        event.key === EVENTS.ArrowUp
+      ) {
+        dispatch({
+          type: ACTIONS.SET_ACROSS,
+          payload: {
+            isAcross:
+              event.key === EVENTS.ArrowLeft || event.key === EVENTS.ArrowRight
+          }
+        });
+      }
+
+      if (
+        (state.isAcross && event.key === EVENTS.ArrowLeft) ||
+        (!state.isAcross && event.key === EVENTS.ArrowUp) ||
+        (event.key === EVENTS.Tab && event.shiftKey) ||
+        event.key === EVENTS.Backspace
+      ) {
+        dispatch({ type: ACTIONS.GO_PREV });
+      }
+
+      if (
+        (state.isAcross && event.key === EVENTS.ArrowRight) ||
+        (!state.isAcross && event.key === EVENTS.ArrowDown) ||
+        event.key === EVENTS.Tab ||
+        isLetter(event.key)
+      ) {
+        dispatch({ type: ACTIONS.GO_NEXT });
+      }
+    }
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  });
 
   return (
     <main className="main">
       <section className="crossword" style={{ "--rows": size.rows }}>
         {grid.map((letter, index) => {
           const number = gridnums[index];
-          const clue = cluesLookup[getDirectionKey(isAcross)][index];
+          const bgColor = isBlack(letter)
+            ? "#000000"
+            : index === state.index
+            ? "#efefef"
+            : cluesLookup[keyDirection][index] ===
+              cluesLookup[keyDirection][state.index]
+            ? "#dddddd"
+            : "#ffffff";
 
           return (
-            <div
-              key={index}
-              className="cell"
-              style={{
-                "--bgcolor": isBlack(letter)
-                  ? "#000000"
-                  : index === indexCurrent
-                  ? "#efefef"
-                  : clue ===
-                    cluesLookup[getDirectionKey(isAcross)][indexCurrent]
-                  ? "#dddddd"
-                  : "#ffffff"
-              }}
-            >
+            <div key={index} className="cell" style={{ "--bgcolor": bgColor }}>
               {number > 0 && <span className="num">{number}</span>}
               {!isBlack(letter) && (
-                <input
+                <button
                   className="input"
                   name={`cell-${index}`}
-                  value={letters[index]}
                   ref={refs[index]}
-                  onFocus={() => setIndexCurrent(index)}
-                  onChange={() => {}}
-                  onKeyDown={event => {
-                    event.persist();
-                    setIndexCurrent(indexCurrent => {
-                      if (isAcross) {
-                        if (
-                          event.key === EVENTS.Backspace ||
-                          event.key === EVENTS.ArrowLeft ||
-                          (event.key === EVENTS.Tab && event.shiftKey)
-                        ) {
-                          return getNextIndex(indexCurrent, grid, -1);
-                        }
-
-                        if (
-                          event.key === EVENTS.ArrowRight ||
-                          event.key === EVENTS.Tab ||
-                          isLetter(event.key)
-                        ) {
-                          return getNextIndex(indexCurrent, grid, +1);
-                        }
-                      } else {
-                        if (
-                          event.key === EVENTS.Backspace ||
-                          event.key === EVENTS.ArrowUp ||
-                          (event.key === EVENTS.Tab && event.shiftKey)
-                        ) {
-                          return getNextIndex(indexCurrent, grid, -size.rows);
-                        }
-
-                        if (
-                          event.key === EVENTS.ArrowDown ||
-                          event.key === EVENTS.Tab ||
-                          isLetter(event.key)
-                        ) {
-                          return getNextIndex(indexCurrent, grid, size.rows);
-                        }
-                      }
-
-                      return indexCurrent;
-                    });
-
-                    setIsAcross(isAcross => {
-                      if (
-                        event.key === EVENTS.ArrowLeft ||
-                        event.key === EVENTS.ArrowRight
-                      ) {
-                        return true;
-                      }
-                      if (
-                        event.key === EVENTS.ArrowDown ||
-                        event.key === EVENTS.ArrowUp
-                      ) {
-                        return false;
-                      }
-                      if (isLetter(event.key)) {
-                        return isAcross;
-                      }
-                      return isAcross;
-                    });
-
-                    if (isLetter(event.key)) {
-                      setLetters(letters => [
-                        ...letters.slice(0, index),
-                        event.key.toUpperCase(),
-                        ...letters.slice(index + 1)
-                      ]);
-                    }
-                  }}
-                />
+                  onFocus={() =>
+                    dispatch({ type: ACTIONS.SET_INDEX, payload: { index } })
+                  }
+                >
+                  {state.letters[index]}
+                </button>
               )}
             </div>
           );
@@ -162,9 +205,8 @@ function App({
                   className="clue"
                   style={{
                     "--bgcolor":
-                      getDirectionKey(isAcross) === key &&
-                      cluesLookup[getDirectionKey(isAcross)][indexCurrent] ===
-                        index
+                      keyDirection === key &&
+                      cluesLookup[keyDirection][index] === index
                         ? "#efefef"
                         : "#ffffff"
                   }}
