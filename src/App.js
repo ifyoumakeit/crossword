@@ -3,7 +3,7 @@ import getCluesLookup from "./utils/get_clues_lookup";
 import getNextIndex from "./utils/get_next_index";
 import { BLANK_CHAR, EVENTS } from "./constants";
 
-import "./App.css";
+import styles from "./App.module.css";
 
 function isBlack(val) {
   return val === BLANK_CHAR;
@@ -110,10 +110,10 @@ function App({
 
   useEffect(() => {
     function handleKeyDown(event) {
-      if (event.target.className !== "input") {
+      if (event.target.className !== styles.input) {
         return dispatch({ type: ACTIONS.SET_INDEX, payload: { index: -1 } });
       }
-      
+
       event.preventDefault();
       if (isLetter(event.key) || event.key === EVENTS.Backspace) {
         dispatch({
@@ -157,11 +157,11 @@ function App({
     }
     window.addEventListener("keydown", handleKeyDown);
     return () => window.removeEventListener("keydown", handleKeyDown);
-  });
+  }, []);
 
   return (
-    <main className="main">
-      <section className="crossword" style={{ "--rows": size.rows }}>
+    <main className={styles.main}>
+      <section className={styles.crossword} style={{ "--rows": size.rows }}>
         {grid.map((letter, index) => {
           const number = gridnums[index];
           const bgColor = isBlack(letter)
@@ -174,11 +174,15 @@ function App({
             : "#ffffff";
 
           return (
-            <div key={index} className="cell" style={{ "--bgcolor": bgColor }}>
-              {number > 0 && <span className="num">{number}</span>}
+            <div
+              key={index}
+              className={styles.cell}
+              style={{ "--bgcolor": bgColor }}
+            >
+              {number > 0 && <span className={styles.num}>{number}</span>}
               {!isBlack(letter) && (
                 <button
-                  className="input"
+                  className={styles.input}
                   name={`cell-${index}`}
                   ref={refs[index]}
                   onFocus={() =>
@@ -192,17 +196,17 @@ function App({
           );
         })}
       </section>
-      <aside className="aside">
-        <h1 className="title">Clues</h1>
+      <aside className={styles.aside}>
+        <h1 className={styles.title}>Clues</h1>
 
         {["across", "down"].map(key => (
           <section key={key}>
-            <h1 className="title">{key.toUpperCase()}</h1>
-            <ul className="clues">
+            <h1 className={styles.title}>{key.toUpperCase()}</h1>
+            <ul className={styles.clues}>
               {clues[key].map((clue, index) => (
                 <li
                   key={clue}
-                  className="clue"
+                  className={styles.clue}
                   style={{
                     "--bgcolor":
                       keyDirection === key &&
