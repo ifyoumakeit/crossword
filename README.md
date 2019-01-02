@@ -1,4 +1,4 @@
-![travis](https://travis-ci.org/ifyoumakeit/crossword.svg?branch=master)
+[![Build Status](https://api.travis-ci.org/ifyoumakeit/crossword.svg)](https://travis-ci.org/ifyoumakeit/crossword)
 
 # Crossword
 
