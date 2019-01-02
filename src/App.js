@@ -108,56 +108,60 @@ function App({
     [state.index]
   );
 
-  useEffect(() => {
-    function handleKeyDown(event) {
-      if (event.target.className !== styles.input) {
-        return dispatch({ type: ACTIONS.SET_INDEX, payload: { index: -1 } });
-      }
+  useEffect(
+    () => {
+      function handleKeyDown(event) {
+        if (event.target.className !== styles.input) {
+          return dispatch({ type: ACTIONS.SET_INDEX, payload: { index: -1 } });
+        }
 
-      event.preventDefault();
-      if (isLetter(event.key) || event.key === EVENTS.Backspace) {
-        dispatch({
-          type: ACTIONS.SET_LETTERS,
-          payload: { letter: event.key === EVENTS.Backspace ? "" : event.key }
-        });
-      }
+        event.preventDefault();
+        if (isLetter(event.key) || event.key === EVENTS.Backspace) {
+          dispatch({
+            type: ACTIONS.SET_LETTERS,
+            payload: { letter: event.key === EVENTS.Backspace ? "" : event.key }
+          });
+        }
 
-      if (
-        event.key === EVENTS.ArrowLeft ||
-        event.key === EVENTS.ArrowRight ||
-        event.key === EVENTS.ArrowDown ||
-        event.key === EVENTS.ArrowUp
-      ) {
-        dispatch({
-          type: ACTIONS.SET_ACROSS,
-          payload: {
-            isAcross:
-              event.key === EVENTS.ArrowLeft || event.key === EVENTS.ArrowRight
-          }
-        });
-      }
+        if (
+          event.key === EVENTS.ArrowLeft ||
+          event.key === EVENTS.ArrowRight ||
+          event.key === EVENTS.ArrowDown ||
+          event.key === EVENTS.ArrowUp
+        ) {
+          dispatch({
+            type: ACTIONS.SET_ACROSS,
+            payload: {
+              isAcross:
+                event.key === EVENTS.ArrowLeft ||
+                event.key === EVENTS.ArrowRight
+            }
+          });
+        }
 
-      if (
-        (state.isAcross && event.key === EVENTS.ArrowLeft) ||
-        (!state.isAcross && event.key === EVENTS.ArrowUp) ||
-        (event.key === EVENTS.Tab && event.shiftKey) ||
-        event.key === EVENTS.Backspace
-      ) {
-        dispatch({ type: ACTIONS.GO_PREV });
-      }
+        if (
+          (state.isAcross && event.key === EVENTS.ArrowLeft) ||
+          (!state.isAcross && event.key === EVENTS.ArrowUp) ||
+          (event.key === EVENTS.Tab && event.shiftKey) ||
+          event.key === EVENTS.Backspace
+        ) {
+          dispatch({ type: ACTIONS.GO_PREV });
+        }
 
-      if (
-        (state.isAcross && event.key === EVENTS.ArrowRight) ||
-        (!state.isAcross && event.key === EVENTS.ArrowDown) ||
-        event.key === EVENTS.Tab ||
-        isLetter(event.key)
-      ) {
-        dispatch({ type: ACTIONS.GO_NEXT });
+        if (
+          (state.isAcross && event.key === EVENTS.ArrowRight) ||
+          (!state.isAcross && event.key === EVENTS.ArrowDown) ||
+          event.key === EVENTS.Tab ||
+          isLetter(event.key)
+        ) {
+          dispatch({ type: ACTIONS.GO_NEXT });
+        }
       }
-    }
-    window.addEventListener("keydown", handleKeyDown);
-    return () => window.removeEventListener("keydown", handleKeyDown);
-  }, []);
+      window.addEventListener("keydown", handleKeyDown);
+      return () => window.removeEventListener("keydown", handleKeyDown);
+    },
+    [state.isAcross]
+  );
 
   return (
     <main className={styles.main}>
