@@ -1,6 +1,6 @@
 :root {
   --pageGutter: 18px;
-  --maxWidth: 500px;
+  --maxWidth: 800px;
 }
 
 .main {
@@ -10,7 +10,7 @@
 }
 
 .crossword {
-  display: grid;  
+  display: grid;
   width: calc(100vw - var(--pageGutter) * 2);
   height: calc(100vw - var(--pageGutter) * 2);
   max-width: var(--maxWidth);
@@ -46,7 +46,7 @@
   height: 100%;
   background: transparent;
   text-align: center;
-  font-size: 3vw;
+  font-size: 1.5vw;
   line-height: 1;
 }
 
@@ -55,6 +55,7 @@
   list-style: none;
   margin: 0;
   padding: 0;
+  margin-bottom: 24px;
 }
 
 .clue {
@@ -85,8 +86,14 @@
 
   .crossword {
     flex-shrink: 0;
-    width: 48vw;
-    height: 48vw;
+    width: 50vw;
+    height: 50vw;
     margin-right: 2vw;
+  }
+}
+
+@media (min-width: 1600px) {
+  .input {
+    font-size: 24px;
   }
 }

@@ -214,7 +214,7 @@ function App({
                   style={{
                     "--bgcolor":
                       keyDirection === key &&
-                      cluesLookup[keyDirection][index] === index
+                      cluesLookup[keyDirection][state.index] === index
                         ? "#efefef"
                         : "#ffffff"
                   }}
