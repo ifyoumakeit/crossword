@@ -1,3 +1,5 @@
+![travis](https://travis-ci.org/ifyoumakeit/crossword.svg?branch=master)
+
 # Crossword
 
 Building a crossword puzzle editor using data from https://github.com/doshea/nyt_crosswords.
