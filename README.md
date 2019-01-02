@@ -1,3 +1,5 @@
+[![Build Status](https://api.travis-ci.org/ifyoumakeit/crossword.svg)](https://travis-ci.org/ifyoumakeit/crossword)
+
 # Crossword
 
 Building a crossword puzzle editor using data from https://github.com/doshea/nyt_crosswords.
