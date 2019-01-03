@@ -1,15 +1,15 @@
 import React from "react";
 import ReactDOM from "react-dom";
 import "./index.css";
-import App from "./App";
+import Crossword from "./Crossword";
 import * as serviceWorker from "./serviceWorker";
 
 fetch(
   "https://raw.githubusercontent.com/doshea/nyt_crosswords/master/2012/09/12.json"
 )
   .then(resp => resp.json())
-  .then(crossword =>
-    ReactDOM.render(<App {...crossword} />, document.getElementById("root"))
+  .then(data =>
+    ReactDOM.render(<Crossword {...data} />, document.getElementById("root"))
   );
 
 // If you want your app to work offline and load faster, you can change

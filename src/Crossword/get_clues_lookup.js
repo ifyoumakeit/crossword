@@ -1,4 +1,4 @@
-import { BLANK_NUMBER, BLANK_CHAR } from "../constants";
+import { BLANK_NUMBER, BLANK_CHAR } from "./constants";
 
 export default function getCluesLookup(grid = [], cols = 0) {
   return {
