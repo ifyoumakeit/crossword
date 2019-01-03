@@ -1,78 +1,10 @@
 import React, { useEffect, useRef, useMemo, useReducer } from "react";
-import getCluesLookup from "./utils/get_clues_lookup";
-import getNextIndex from "./utils/get_next_index";
-import { BLANK_CHAR, EVENTS } from "./constants";
+import getCluesLookup from "./get_clues_lookup";
+import reducer from "./reducer";
+import * as utils from "./utils";
+import { EVENTS, ACTIONS } from "./constants";
 
-import styles from "./App.module.css";
-
-function isBlack(val) {
-  return val === BLANK_CHAR;
-}
-
-function isLetter(val) {
-  return /^[a-zA-Z]$/.test(val);
-}
-
-const ACTIONS = {
-  SET_INDEX: "SET_INDEX",
-  SET_LETTERS: "SET_LETTERS",
-  SET_ACROSS: "SET_ACROSS",
-  GO_NEXT: "GO_NEXT",
-  GO_PREV: "GO_PREV"
-};
-
-function reducer(state, action = {}) {
-  switch (action.type) {
-    case ACTIONS.SET_LETTERS: {
-      const { letter } = action.payload;
-      return {
-        ...state,
-        letters: [
-          ...state.letters.slice(0, state.index),
-          letter.toUpperCase(),
-          ...state.letters.slice(state.index + 1)
-        ]
-      };
-    }
-    case ACTIONS.SET_ACROSS: {
-      const { isAcross } = action.payload;
-      return {
-        ...state,
-        isAcross
-      };
-    }
-    case ACTIONS.SET_INDEX: {
-      const { index } = action.payload;
-      return {
-        ...state,
-        index: index
-      };
-    }
-    case ACTIONS.GO_NEXT: {
-      return {
-        ...state,
-        index: getNextIndex(
-          state.index,
-          state.grid,
-          state.isAcross ? 1 : state.rows
-        )
-      };
-    }
-    case ACTIONS.GO_PREV: {
-      return {
-        ...state,
-        index: getNextIndex(
-          state.index,
-          state.grid,
-          state.isAcross ? -1 : -state.rows
-        )
-      };
-    }
-    default: {
-      return state;
-    }
-  }
-}
+import styles from "./index.module.css";
 
 function App({
   size = { rows: 0, cols: 0 },
@@ -88,15 +20,18 @@ function App({
     index: 0,
     isAcross: true,
     letters: grid.map(() => ""),
+    rows: size.rows,
     grid,
-    rows: size.rows
+    
   });
 
   const keyDirection = state.isAcross ? "across" : "down";
   const cluesLookup = useMemo(() => getCluesLookup(grid, size.cols), [grid]);
 
   // Set references to all inputs, skip black cells.
-  const refs = grid.map(letter => (!isBlack(letter) ? useRef(null) : null));
+  const refs = grid.map(letter =>
+    !utils.isBlack(letter) ? useRef(null) : null
+  );
 
   useEffect(
     () => {
@@ -116,7 +51,8 @@ function App({
         }
 
         event.preventDefault();
-        if (isLetter(event.key) || event.key === EVENTS.Backspace) {
+
+        if (utils.isLetter(event.key) || event.key === EVENTS.Backspace) {
           dispatch({
             type: ACTIONS.SET_LETTERS,
             payload: { letter: event.key === EVENTS.Backspace ? "" : event.key }
@@ -152,7 +88,7 @@ function App({
           (state.isAcross && event.key === EVENTS.ArrowRight) ||
           (!state.isAcross && event.key === EVENTS.ArrowDown) ||
           event.key === EVENTS.Tab ||
-          isLetter(event.key)
+          utils.isLetter(event.key)
         ) {
           dispatch({ type: ACTIONS.GO_NEXT });
         }
@@ -168,7 +104,7 @@ function App({
       <section className={styles.crossword} style={{ "--rows": size.rows }}>
         {grid.map((letter, index) => {
           const number = gridnums[index];
-          const bgColor = isBlack(letter)
+          const bgColor = utils.isBlack(letter)
             ? "#000000"
             : index === state.index
             ? "#efefef"
@@ -184,7 +120,7 @@ function App({
               style={{ "--bgcolor": bgColor }}
             >
               {number > 0 && <span className={styles.num}>{number}</span>}
-              {!isBlack(letter) && (
+              {!utils.isBlack(letter) && (
                 <button
                   className={styles.input}
                   name={`cell-${index}`}

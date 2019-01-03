@@ -16,3 +16,11 @@ export const EVENTS = {
   ArrowLeft: "ArrowLeft",
   Tab: "Tab"
 };
+
+export const ACTIONS = {
+  SET_INDEX: "SET_INDEX",
+  SET_LETTERS: "SET_LETTERS",
+  SET_ACROSS: "SET_ACROSS",
+  GO_NEXT: "GO_NEXT",
+  GO_PREV: "GO_PREV"
+};
