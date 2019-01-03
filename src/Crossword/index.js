@@ -107,10 +107,10 @@ function App({
           const bgColor = utils.isBlack(letter)
             ? "#000000"
             : index === state.index
-            ? "#efefef"
+            ? "#efefaa"
             : cluesLookup[keyDirection][index] ===
               cluesLookup[keyDirection][state.index]
-            ? "#dddddd"
+            ? "#B7E2F0"
             : "#ffffff";
 
           return (
