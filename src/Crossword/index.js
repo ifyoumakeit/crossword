@@ -21,8 +21,7 @@ function App({
     isAcross: true,
     letters: grid.map(() => ""),
     rows: size.rows,
-    grid,
-    
+    grid
   });
 
   const keyDirection = state.isAcross ? "across" : "down";
@@ -41,6 +40,42 @@ function App({
       }
     },
     [state.index]
+  );
+
+  useEffect(
+    () => {
+      window.XW = {
+        next: () => dispatch({ type: ACTIONS.GO_NEXT }),
+        prev: () => dispatch({ type: ACTIONS.GO_PREV }),
+        setAcross: isAcross => {
+          dispatch({ type: ACTIONS.SET_ACROSS, payload: { isAcross } });
+        },
+        setWord: (clue, word) => {
+          // TODO, This currently doesn't work for anything after first row.
+          // The lookup is slightly backwards.
+          const [clueNumStr, clueDirStr] = clue.match(/[a-z]+|[^a-z]+/gi);
+          const clueNum = parseInt(clueNumStr);
+          const isAcross =
+            clueDirStr === "A" || (state.isAcross && !clueDirStr);
+
+          const index = cluesLookup[isAcross ? "across" : "down"].indexOf(
+            clueNum - 1
+          );
+
+          dispatch({ type: ACTIONS.SET_INDEX, payload: { index } });
+          dispatch({ type: ACTIONS.SET_ACROSS, payload: { isAcross } });
+
+          word.split("").forEach(letter => {
+            dispatch({
+              type: ACTIONS.SET_LETTERS,
+              payload: { letter }
+            });
+            dispatch({ type: ACTIONS.GO_NEXT });
+          });
+        }
+      };
+    },
+    [state.isAcross]
   );
 
   useEffect(
