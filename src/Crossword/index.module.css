@@ -73,6 +73,24 @@
   margin: 0 0 12px;
 }
 
+.check {
+  background: rgba(0, 0, 0, 0.5);
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100vw;
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.modal {
+  background: #fff;
+  padding: 24px;
+  border-radius: 4px;
+}
+
 @media (min-width: 900px) {
   .num,
   .clue {

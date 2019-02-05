@@ -1,8 +1,6 @@
 export const DIRECTIONS = {
-  up: "up",
-  right: "right",
-  down: "down",
-  left: "left"
+  across: "across",
+  down: "down"
 };
 
 export const BLANK_CHAR = ".";
@@ -14,16 +12,18 @@ export const EVENTS = {
   ArrowDown: "ArrowDown",
   ArrowRight: "ArrowRight",
   ArrowLeft: "ArrowLeft",
-  Tab: "Tab"
+  Tab: "Tab",
+  Enter: "Enter"
 };
 
 export const ACTIONS = {
   SET_INDEX: "SET_INDEX",
-  UNSET_INDEX: "UNSET_INDEX",
   SET_LETTERS: "SET_LETTERS",
   SET_ACROSS: "SET_ACROSS",
+  TOGGLE_ACROSS: "TOGGLE_ACROSS",
   GO_NEXT: "GO_NEXT",
   GO_PREV: "GO_PREV",
   CHECK_PUZZLE: "CHECK_PUZZLE",
-  SET_CROSSWORD: "SET_CROSSWORD",
+  HIDE_CHECK: "HIDE_CHECK",
+  SET_CROSSWORD: "SET_CROSSWORD"
 };

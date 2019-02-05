@@ -1,4 +1,4 @@
-import { BLANK_CHAR, ACTIONS } from "./constants";
+import { BLANK_CHAR, ACTIONS, DIRECTIONS } from "./constants";
 import getCluesLookup from "./get_clues_lookup";
 
 function getNextIndex(index = 0, grid = [], adder = 0) {
@@ -16,6 +16,7 @@ function getNextIndex(index = 0, grid = [], adder = 0) {
 }
 
 export const initialState = {
+  debug: false,
   index: 0,
   isAcross: true,
   isComplete: false,
@@ -23,7 +24,8 @@ export const initialState = {
   rows: 0,
   grid: [],
   size: 0,
-  direction: "across",
+  showCheck: false,
+  direction: DIRECTIONS.across,
   gridnums: [],
   clues: {
     across: [],
@@ -32,6 +34,7 @@ export const initialState = {
 };
 
 export default function reducer(state, action = {}) {
+  state.debug && console.log(action);
   switch (action.type) {
     case ACTIONS.SET_LETTERS: {
       return {
@@ -44,17 +47,18 @@ export default function reducer(state, action = {}) {
       };
     }
     case ACTIONS.SET_ACROSS: {
-      return {
-        ...state,
-        direction: !!action.payload ? "across" : "down",
-        isAcross: !!action.payload
-      };
+      return { ...state, isAcross: !!action.payload };
+    }
+    case ACTIONS.TOGGLE_ACROSS: {
+      return { ...state, isAcross: !state.isAcross };
     }
     case ACTIONS.SET_INDEX: {
-      return { ...state, index: action.payload };
-    }
-    case ACTIONS.UNSET_INDEX: {
-      return { ...state, index: -1 };
+      return {
+        ...state,
+        index: action.payload,
+        isAcross:
+          action.payload === state.index ? !state.isAcross : state.isAcross
+      };
     }
     case ACTIONS.GO_NEXT: {
       return {
@@ -93,9 +97,16 @@ export default function reducer(state, action = {}) {
     case ACTIONS.CHECK_PUZZLE: {
       return {
         ...state,
+        showCheck: true,
         isComplete: state.grid.every(
           (letter, index) => state.letters[index] === letter
         )
+      };
+    }
+    case ACTIONS.HIDE_CHECK: {
+      return {
+        ...state,
+        showCheck: false
       };
     }
     default: {
