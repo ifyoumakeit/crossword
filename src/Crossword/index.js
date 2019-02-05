@@ -1,55 +1,28 @@
-import React, { useEffect, useRef, useReducer } from "react";
+import React, { useEffect, useRef, useMemo, useReducer } from "react";
 
-import reducer from "./reducer";
+import reducer, { initialState } from "./reducer";
 import * as utils from "./utils";
 import { EVENTS, ACTIONS } from "./constants";
 
 import styles from "./index.module.css";
 
-function App() {
-  // Create updaters for all pieces of state
-  const [state, dispatch] = useReducer(reducer, {
-    index: 0,
-    isAcross: true,
-    isComplete: false,
-    letters: [],
-    rows: 0,
-    grid: [],
-    size: 0,
-    direction: "across",
-    gridnums: [],
-    clues: {
-      across: [],
-      down: []
-    }
-  });
-
-  // Set references to all inputs, skip black cells.
-  const refs = state.grid.map(letter =>
-    !utils.isBlack(letter) ? useRef(null) : null
-  );
+function App({ date = "2012/09/12" }) {
+  const [state, dispatch] = useReducer(reducer, initialState);
 
   useEffect(() => {
     fetch(
-      "https://raw.githubusercontent.com/doshea/nyt_crosswords/master/2012/09/12.json"
+      `https://raw.githubusercontent.com/doshea/nyt_crosswords/master/${date}.json`
     )
       .then(resp => resp.json())
       .then(data => dispatch({ type: ACTIONS.SET_CROSSWORD, payload: data }));
   }, []);
 
   useEffect(() => {
-    // Focus on next input if index changes.
-    if (refs[state.index] && refs[state.index].current) {
-      refs[state.index].current.focus();
-    }
-  }, [state.index]);
-
-  useEffect(() => {
     window.XW = {
       next: () => dispatch({ type: ACTIONS.GO_NEXT }),
       prev: () => dispatch({ type: ACTIONS.GO_PREV }),
       setAcross: isAcross => {
-        dispatch({ type: ACTIONS.SET_ACROSS, payload: { isAcross } });
+        dispatch({ type: ACTIONS.SET_ACROSS, payload: isAcross });
       },
       setWord: (clue, word) => {
         // TODO, This currently doesn't work for anything after first row.
@@ -66,14 +39,11 @@ function App() {
           return console.warn("Incorrect clue");
         }
 
-        dispatch({ type: ACTIONS.SET_INDEX, payload: { index } });
-        dispatch({ type: ACTIONS.SET_ACROSS, payload: { isAcross } });
+        dispatch({ type: ACTIONS.SET_INDEX, payload: index });
+        dispatch({ type: ACTIONS.SET_ACROSS, payload: isAcross });
 
         word.split("").forEach(letter => {
-          dispatch({
-            type: ACTIONS.SET_LETTERS,
-            payload: { letter }
-          });
+          dispatch({ type: ACTIONS.SET_LETTERS, payload: letter });
           dispatch({ type: ACTIONS.GO_NEXT });
         });
       }
@@ -83,7 +53,7 @@ function App() {
   useEffect(() => {
     function handleKeyDown(event) {
       if (event.target.className !== styles.input) {
-        return dispatch({ type: ACTIONS.SET_INDEX, payload: { index: -1 } });
+        return dispatch({ type: ACTIONS.UNSET_INDEX });
       }
 
       event.preventDefault();
@@ -91,7 +61,7 @@ function App() {
       if (utils.isLetter(event.key) || event.key === EVENTS.Backspace) {
         dispatch({
           type: ACTIONS.SET_LETTERS,
-          payload: { letter: event.key === EVENTS.Backspace ? "" : event.key }
+          payload: event.key === EVENTS.Backspace ? "" : event.key
         });
       }
 
@@ -103,10 +73,8 @@ function App() {
       ) {
         dispatch({
           type: ACTIONS.SET_ACROSS,
-          payload: {
-            isAcross:
-              event.key === EVENTS.ArrowLeft || event.key === EVENTS.ArrowRight
-          }
+          payload:
+            event.key === EVENTS.ArrowLeft || event.key === EVENTS.ArrowRight
         });
       }
 
@@ -134,41 +102,42 @@ function App() {
 
   return (
     <main className={styles.main}>
-      <section className={styles.crossword} style={{ "--rows": state.size }}>
-        {state.grid.map((letter, index) => {
-          const number = state.gridnums[index];
-          const bgColor = utils.isBlack(letter)
-            ? "#000000"
-            : index === state.index
-            ? "#efefaa"
-            : state.cluesLookup[state.direction][index] ===
-              state.cluesLookup[state.direction][state.index]
-            ? "#B7E2F0"
-            : "#ffffff";
+      {state.grid.length > 0 && (
+        <section className={styles.crossword} style={{ "--rows": state.size }}>
+          {state.grid.map((letter, index) => {
+            const number = state.gridnums[index];
+            const bgColor = utils.isBlack(letter)
+              ? "#000000"
+              : index === state.index
+              ? "#efefaa"
+              : state.cluesLookup[state.direction][index] ===
+                state.cluesLookup[state.direction][state.index]
+              ? "#B7E2F0"
+              : "#ffffff";
 
-          return (
-            <div
-              key={index}
-              className={styles.cell}
-              style={{ "--bgcolor": bgColor }}
-            >
-              {number > 0 && <span className={styles.num}>{number}</span>}
-              {!utils.isBlack(letter) && (
-                <button
-                  className={styles.input}
-                  name={`cell-${index}`}
-                  ref={refs[index]}
-                  onFocus={() =>
-                    dispatch({ type: ACTIONS.SET_INDEX, payload: { index } })
-                  }
-                >
-                  {state.letters[index]}
-                </button>
-              )}
-            </div>
-          );
-        })}
-      </section>
+            return (
+              <div
+                key={index}
+                className={styles.cell}
+                style={{ "--bgcolor": bgColor }}
+              >
+                {number > 0 && <span className={styles.num}>{number}</span>}
+                {!utils.isBlack(letter) && (
+                  <button
+                    className={styles.input}
+                    name={`cell-${index}`}
+                    onFocus={() =>
+                      dispatch({ type: ACTIONS.SET_INDEX, payload: index })
+                    }
+                  >
+                    {state.letters[index]}
+                  </button>
+                )}
+              </div>
+            );
+          })}
+        </section>
+      )}
       <aside className={styles.aside}>
         <header className={styles.header}>
           <h1 className={styles.title}>Clues</h1>

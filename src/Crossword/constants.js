@@ -19,6 +19,7 @@ export const EVENTS = {
 
 export const ACTIONS = {
   SET_INDEX: "SET_INDEX",
+  UNSET_INDEX: "UNSET_INDEX",
   SET_LETTERS: "SET_LETTERS",
   SET_ACROSS: "SET_ACROSS",
   GO_NEXT: "GO_NEXT",

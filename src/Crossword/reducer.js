@@ -15,33 +15,46 @@ function getNextIndex(index = 0, grid = [], adder = 0) {
   return index;
 }
 
+export const initialState = {
+  index: 0,
+  isAcross: true,
+  isComplete: false,
+  letters: [],
+  rows: 0,
+  grid: [],
+  size: 0,
+  direction: "across",
+  gridnums: [],
+  clues: {
+    across: [],
+    down: []
+  }
+};
+
 export default function reducer(state, action = {}) {
   switch (action.type) {
     case ACTIONS.SET_LETTERS: {
-      const { letter } = action.payload;
       return {
         ...state,
         letters: [
           ...state.letters.slice(0, state.index),
-          letter.toUpperCase(),
+          action.payload.toUpperCase(),
           ...state.letters.slice(state.index + 1)
         ]
       };
     }
     case ACTIONS.SET_ACROSS: {
-      const { isAcross } = action.payload;
       return {
         ...state,
-        direction: isAcross ? "across" : "down",
-        isAcross
+        direction: !!action.payload ? "across" : "down",
+        isAcross: !!action.payload
       };
     }
     case ACTIONS.SET_INDEX: {
-      const { index } = action.payload;
-      return {
-        ...state,
-        index: index
-      };
+      return { ...state, index: action.payload };
+    }
+    case ACTIONS.UNSET_INDEX: {
+      return { ...state, index: -1 };
     }
     case ACTIONS.GO_NEXT: {
       return {
