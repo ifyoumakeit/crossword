@@ -1,36 +1,41 @@
-import React, { useEffect, useRef, useMemo, useReducer } from "react";
-import getCluesLookup from "./get_clues_lookup";
+import React, { useEffect, useRef, useReducer } from "react";
+
 import reducer from "./reducer";
 import * as utils from "./utils";
 import { EVENTS, ACTIONS } from "./constants";
 
 import styles from "./index.module.css";
 
-function App({
-  size = { rows: 0, cols: 0 },
-  grid = [],
-  gridnums = [],
-  clues = {
-    across: [],
-    down: []
-  }
-}) {
+function App() {
   // Create updaters for all pieces of state
   const [state, dispatch] = useReducer(reducer, {
     index: 0,
     isAcross: true,
-    letters: grid.map(() => ""),
-    rows: size.rows,
-    grid
+    isComplete: false,
+    letters: [],
+    rows: 0,
+    grid: [],
+    size: 0,
+    direction: "across",
+    gridnums: [],
+    clues: {
+      across: [],
+      down: []
+    }
   });
 
-  const keyDirection = state.isAcross ? "across" : "down";
-  const cluesLookup = useMemo(() => getCluesLookup(grid, size.cols), [grid]);
-
   // Set references to all inputs, skip black cells.
-  const refs = grid.map(letter =>
+  const refs = state.grid.map(letter =>
     !utils.isBlack(letter) ? useRef(null) : null
   );
+
+  useEffect(() => {
+    fetch(
+      "https://raw.githubusercontent.com/doshea/nyt_crosswords/master/2012/09/12.json"
+    )
+      .then(resp => resp.json())
+      .then(data => dispatch({ type: ACTIONS.SET_CROSSWORD, payload: data }));
+  }, []);
 
   useEffect(() => {
     // Focus on next input if index changes.
@@ -52,13 +57,11 @@ function App({
         const [clueNumStr, clueDirStr] = clue.match(/[a-z]+|[^a-z]+/gi);
         const clueNum = parseInt(clueNumStr);
         const isAcross = clueDirStr === "A" || (state.isAcross && !clueDirStr);
-        const indexClue = clues[isAcross ? "across" : "down"].findIndex(str => {
+        const indexClue = state.clues[state.direction].findIndex(str => {
           return str.indexOf(`${clueNum}.`) === 0;
         });
 
-        const index = cluesLookup[isAcross ? "across" : "down"].indexOf(
-          indexClue
-        );
+        const index = state.cluesLookup[state.direction].indexOf(indexClue);
         if (indexClue === -1) {
           return console.warn("Incorrect clue");
         }
@@ -75,7 +78,7 @@ function App({
         });
       }
     };
-  }, [state.isAcross]);
+  }, [state.isAcross, state.clues, state.cluesLookup, state.direction]);
 
   useEffect(() => {
     function handleKeyDown(event) {
@@ -131,15 +134,15 @@ function App({
 
   return (
     <main className={styles.main}>
-      <section className={styles.crossword} style={{ "--rows": size.rows }}>
-        {grid.map((letter, index) => {
-          const number = gridnums[index];
+      <section className={styles.crossword} style={{ "--rows": state.size }}>
+        {state.grid.map((letter, index) => {
+          const number = state.gridnums[index];
           const bgColor = utils.isBlack(letter)
             ? "#000000"
             : index === state.index
             ? "#efefaa"
-            : cluesLookup[keyDirection][index] ===
-              cluesLookup[keyDirection][state.index]
+            : state.cluesLookup[state.direction][index] ===
+              state.cluesLookup[state.direction][state.index]
             ? "#B7E2F0"
             : "#ffffff";
 
@@ -167,20 +170,25 @@ function App({
         })}
       </section>
       <aside className={styles.aside}>
-        <h1 className={styles.title}>Clues</h1>
+        <header className={styles.header}>
+          <h1 className={styles.title}>Clues</h1>
+          <button onClick={() => dispatch({ type: ACTIONS.CHECK_PUZZLE })}>
+            Check puzzle
+          </button>
+        </header>
 
         {["across", "down"].map(key => (
           <section key={key}>
             <h1 className={styles.title}>{key.toUpperCase()}</h1>
             <ul className={styles.clues}>
-              {clues[key].map((clue, index) => (
+              {state.clues[key].map((clue, index) => (
                 <li
                   key={clue}
                   className={styles.clue}
                   style={{
                     "--bgcolor":
-                      keyDirection === key &&
-                      cluesLookup[keyDirection][state.index] === index
+                      state.direction === key &&
+                      state.cluesLookup[state.direction][state.index] === index
                         ? "#efefef"
                         : "#ffffff"
                   }}

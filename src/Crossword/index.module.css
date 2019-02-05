@@ -1,12 +1,17 @@
 :root {
   --pageGutter: 18px;
-  --maxWidth: 800px;
+  --maxWidth: 650px;
 }
 
 .main {
   max-width: 100%;
   padding: var(--pageGutter);
   margin: auto;
+}
+
+.header {
+  display: flex;
+  justify-content: space-between;
 }
 
 .crossword {

@@ -1,4 +1,5 @@
 import { BLANK_CHAR, ACTIONS } from "./constants";
+import getCluesLookup from "./get_clues_lookup";
 
 function getNextIndex(index = 0, grid = [], adder = 0) {
   const indexNext = index + adder;
@@ -13,7 +14,6 @@ function getNextIndex(index = 0, grid = [], adder = 0) {
 
   return index;
 }
-
 
 export default function reducer(state, action = {}) {
   switch (action.type) {
@@ -32,6 +32,7 @@ export default function reducer(state, action = {}) {
       const { isAcross } = action.payload;
       return {
         ...state,
+        direction: isAcross ? "across" : "down",
         isAcross
       };
     }
@@ -48,7 +49,7 @@ export default function reducer(state, action = {}) {
         index: getNextIndex(
           state.index,
           state.grid,
-          state.isAcross ? 1 : state.rows
+          state.isAcross ? 1 : state.size
         )
       };
     }
@@ -58,7 +59,29 @@ export default function reducer(state, action = {}) {
         index: getNextIndex(
           state.index,
           state.grid,
-          state.isAcross ? -1 : -state.rows
+          state.isAcross ? -1 : -state.size
+        )
+      };
+    }
+    case ACTIONS.SET_CROSSWORD: {
+      return {
+        ...state,
+        grid: action.payload.grid,
+        clues: action.payload.clues,
+        gridnums: action.payload.gridnums,
+        letters: action.payload.grid.map(() => ""),
+        size: action.payload.size.cols,
+        cluesLookup: getCluesLookup(
+          action.payload.grid,
+          action.payload.size.cols
+        )
+      };
+    }
+    case ACTIONS.CHECK_PUZZLE: {
+      return {
+        ...state,
+        isComplete: state.grid.every(
+          (letter, index) => state.letters[index] === letter
         )
       };
     }
